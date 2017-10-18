@@ -124,17 +124,22 @@
   // stash them in hidden fields.) 
   function calc_times(control) {
     var km = control.find("input[name='km']").val();
+    var date = $("[name='begin_date']").val();
+    var time = $("[name='begin_time']").val();
+    var date_time = String(date) + String(time);
+    var brevet_dist_km = $("[name='distance']").val();
+
     var open_time_field = control.find("input[name='open']");
     var close_time_field = control.find("input[name='close']");
     
-    $.getJSON(TIME_CALC_URL, { km: km }, 
+    $.getJSON(TIME_CALC_URL, { km: km, date_time: date_time, brevet_dist_km: brevet_dist_km }, 
       // response handler
       function(data) {
          var times = data.result;
          console.log("Got a response: " +  times);
          console.log("Response.open = " + times.open);
-         open_time_field.val( moment(times.open).format("ddd M/D H:mm"));
-         close_time_field.val( moment(times.close).format("ddd M/D H:mm"));
+         open_time_field.val( moment(times.open).utc().format("YYYY-MM-DD HH:mm"));
+         close_time_field.val( moment(times.close).utc().format("YYYY-MM-DD HH:mm"));
        } // end of handler function
      );// End of getJSON
     }
