@@ -5,7 +5,7 @@ following rules described at https://rusa.org/octime_alg.html
 and https://rusa.org/pages/rulesForRiders
 """
 import arrow
-from modal import controle_table, controle, time_needed  # data
+from modal import *  # data
 
 #  Note for CIS 322 Fall 2016:
 #  You MUST provide the following two functions
@@ -16,36 +16,43 @@ from modal import controle_table, controle, time_needed  # data
 #  javadoc comments.
 #
 
+def get_hour(this_part_dist, divisor_speed):
+  return this_part_dist // divisor_speed
+
+def get_min(this_part_dist, divisor_speed):
+  return (this_part_dist / divisor_speed) % 1 * 60
+
 
 def open_close_time_router(control_dist_km, brevet_dist_km, brevet_start_time, ID):
-  accumulator = time_needed()
-
+  hour_needed = 0
+  min_needed = 0
   brevet_start_time = arrow.get(brevet_start_time)
+  total_time_needed = time_needed()
+  
   for km in controle_table:
     if km > brevet_dist_km or km > control_dist_km:
       continue  # skip higher km value
+    if control_dist_km == 0:
+      break
 
     this_part_dist = control_dist_km - km
     control_dist_km -= this_part_dist
 
     if ID == "OPEN":
-      hour_needed = this_part_dist // controle_table[km].maxSpeed
-      min_needed = (this_part_dist / controle_table[km].maxSpeed -
-                    this_part_dist // controle_table[km].maxSpeed) * 60
+      divisor_speed = controle_table[km].maxSpeed
     else:
-      hour_needed = this_part_dist // controle_table[km].minSpeed
-      min_needed = (this_part_dist / controle_table[km].minSpeed -
-                    this_part_dist // controle_table[km].minSpeed) * 60 + 10
+      divisor_speed = controle_table[km].minSpeed
 
-    min_needed = round(min_needed, 0)  # comply with ACP std
+    hour_needed += get_hour(this_part_dist, divisor_speed)
+    min_needed += get_min(this_part_dist, divisor_speed)
+    print("hour_needed: ", hour_needed , " min_needed: ", min_needed)
 
-    this_part_time_needed = time_needed(hour_needed, min_needed)
-    accumulator.combination(this_part_time_needed)
+  total_time_needed.hours = hour_needed
+  total_time_needed.mins = min_needed
 
   result_time = brevet_start_time.shift(
-      hours=accumulator.hours, minutes=accumulator.mins)
-
-  print(accumulator)
+      hours=total_time_needed.hours, minutes=total_time_needed.mins)
+  print(total_time_needed)
 
   return result_time.isoformat()
 
@@ -64,8 +71,6 @@ def open_time(control_dist_km, brevet_dist_km, brevet_start_time):
      This will be in the same time zone as the brevet start time.
   """
   return open_close_time_router(control_dist_km, brevet_dist_km, brevet_start_time, "OPEN")
-
-  # <default> return arrow.now().isoformat()
 
 
 def close_time(control_dist_km, brevet_dist_km, brevet_start_time):

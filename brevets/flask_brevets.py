@@ -65,6 +65,8 @@ def _calc_times():
     
     open_time = acp_times.open_time(km, brevet_dist_km, date_time)
     close_time = acp_times.close_time(km, brevet_dist_km, date_time)
+    if open_time == close_time:
+        close_time = arrow.get(close_time).shift(minutes=10).isoformat()
     result = {"open": open_time, "close": close_time}
 
     app.logger.debug("Sending JSON request")
