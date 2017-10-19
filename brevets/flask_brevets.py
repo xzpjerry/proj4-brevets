@@ -9,6 +9,7 @@ from flask import request
 import arrow  # Replacement for datetime, based on moment.js
 import acp_times  # Brevet time calculations
 import config
+from modal import controle_list
 
 import logging
 
@@ -18,6 +19,7 @@ import logging
 app = flask.Flask(__name__)
 CONFIG = config.configuration()
 app.secret_key = CONFIG.SECRET_KEY
+CONTROL_spec = controle_list(CONFIG.CONTROL).controle_table
 
 ###
 # Pages

@@ -5,7 +5,8 @@ following rules described at https://rusa.org/octime_alg.html
 and https://rusa.org/pages/rulesForRiders
 """
 import arrow
-from modal import *  # data
+from modal import *  # get modal
+from flask_brevets import CONTROL_spec  # get data
 
 #  Note for CIS 322 Fall 2016:
 #  You MUST provide the following two functions
@@ -16,43 +17,47 @@ from modal import *  # data
 #  javadoc comments.
 #
 
+
 def get_hour(this_part_dist, divisor_speed):
   return this_part_dist // divisor_speed
+
 
 def get_min(this_part_dist, divisor_speed):
   return (this_part_dist / divisor_speed) % 1 * 60
 
 
 def open_close_time_router(control_dist_km, brevet_dist_km, brevet_start_time, ID):
+  if control_dist_km > brevet_dist_km:
+    control_dist_km = brevet_dist_km
+
   hour_needed = 0
   min_needed = 0
   brevet_start_time = arrow.get(brevet_start_time)
   total_time_needed = time_needed()
-  
-  for km in controle_table:
-    if km > brevet_dist_km or km > control_dist_km:
-      continue  # skip higher km value
+
+  for minkm in CONTROL_spec:
+    if minkm > brevet_dist_km or minkm > control_dist_km:
+      continue  # skip higher km value since I'm using greedy way to compute
+
     if control_dist_km == 0:
       break
 
-    this_part_dist = control_dist_km - km
+    this_part_dist = control_dist_km - minkm
     control_dist_km -= this_part_dist
 
     if ID == "OPEN":
-      divisor_speed = controle_table[km].maxSpeed
+      divisor_speed = CONTROL_spec[minkm].maxSpeed
     else:
-      divisor_speed = controle_table[km].minSpeed
+      divisor_speed = CONTROL_spec[minkm].minSpeed
 
     hour_needed += get_hour(this_part_dist, divisor_speed)
     min_needed += get_min(this_part_dist, divisor_speed)
-    print("hour_needed: ", hour_needed , " min_needed: ", min_needed)
 
   total_time_needed.hours = hour_needed
   total_time_needed.mins = min_needed
 
   result_time = brevet_start_time.shift(
       hours=total_time_needed.hours, minutes=total_time_needed.mins)
-  print(total_time_needed)
 
   return result_time.isoformat()
 
