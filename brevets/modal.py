@@ -1,45 +1,17 @@
-# Conforming with MVC design
-# Data_structure for a controle
+# Conforming with MVC design pattern
+# Data_structure for a controle and overall time limit module
 
 from os import path
 import re
 
 
-class controle:
-
-    def __init__(self, minSpeed=-1, maxSpeed=-1):
-        self.minSpeed = minSpeed
-        self.maxSpeed = maxSpeed
-
-    def __str__(self):
-        return str(self.minSpeed) + str(self.maxSpeed)
-
-
-class controle_list():
-
-    def __init__(self, controleList : str):
-        self.controle_table = {}
-        re_rule = re.compile(
-            r'^([0-9]*)\-[0-9]*.*[mM]in\:([0-9\.]*).*[mM]ax\:([0-9\.]*)$')
-        if path.isfile(controleList):
-            with open(controleList, 'r') as f:
-                for line in f.readlines():
-                    tmp_match_result = re_rule.match(line)
-                    if tmp_match_result:
-                        self.controle_table[float(tmp_match_result.group(1))] = controle(
-                            float(tmp_match_result.group(2)), float(tmp_match_result.group(3)))
-
-        else:
-            self.controle_table = {
-                1000: controle(13.333, 26),
-                600: controle(11.428, 28),
-                400: controle(15, 30),
-                200: controle(15, 32),
-                0: controle(15, 34)
-            }
-
-
 class time_needed:
+    '''
+    A silly way to comply with ACP's rules,
+    to arrange hours and minutes.
+    I would prefer to use arrow's shifting directly
+    if we don't care the precision.
+    '''
     __hours = None
     __mins = None
 
@@ -70,3 +42,58 @@ class time_needed:
 
     def __str__(self):
         return "Hour: " + str(self.hours) + ", mins: " + str(self.mins)
+
+
+class controle:
+
+    def __init__(self, minSpeed=0, maxSpeed=0):
+        self.minSpeed = minSpeed
+        self.maxSpeed = maxSpeed
+
+    def __str__(self):
+        return str(self.minSpeed) + str(self.maxSpeed)
+
+
+class controle_overall_list():
+    '''
+    read controle_overall_limitList info from data/
+    '''
+
+    def __init__(self, controle_overall_limitList: str):
+        self.overall_time_limit_table = {}
+        controle_overall_limit_rule = re.compile(
+            r'^([0-9]*).*[hH]ours\:([0-9]*).*[mM]ins\:([0-9]*)$')
+
+        if path.isfile(controle_overall_limitList):
+            with open(controle_overall_limitList, 'r') as f:
+                for line in f.readlines():
+                    tmp_match_result = controle_overall_limit_rule.match(line)
+                    if tmp_match_result:
+                        km = float(tmp_match_result.group(1))
+                        hrs = float(tmp_match_result.group(2))
+                        mins = float(tmp_match_result.group(3))
+                        self.overall_time_limit_table[km] = time_needed(hrs, mins)
+
+
+class controle_list():
+    '''
+    read controle spec from data/
+    '''
+
+    def __init__(self, controleList: str):
+        self.controle_table = {}
+        controle_speed_rule = re.compile(
+            r'^([0-9]*)\-([0-9]*).*[mM]in\:([0-9\.]*).*[mM]ax\:([0-9\.]*)$')
+
+        if path.isfile(controleList):
+            with open(controleList, 'r') as f:
+                for line in f.readlines():
+                    tmp_match_result = controle_speed_rule.match(line)
+                    if tmp_match_result:
+                        min_km = float(tmp_match_result.group(1))
+                        max_km = float(tmp_match_result.group(2))
+                        minSpeed = float(tmp_match_result.group(3))
+                        maxSpeed = float(tmp_match_result.group(4))
+
+                        self.controle_table[min_km] = controle(
+                            minSpeed, maxSpeed)

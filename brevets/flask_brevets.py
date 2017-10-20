@@ -9,7 +9,7 @@ from flask import request
 import arrow  # Replacement for datetime, based on moment.js
 import acp_times  # Brevet time calculations
 import config
-from modal import controle_list
+from modal import controle_list, controle_overall_list
 
 import logging
 
@@ -20,6 +20,8 @@ app = flask.Flask(__name__)
 CONFIG = config.configuration()
 app.secret_key = CONFIG.SECRET_KEY
 CONTROL_spec = controle_list(CONFIG.CONTROL).controle_table
+CONTROL_OVERALL_spec = controle_overall_list(
+    CONFIG.CONTROL_OVERALL).overall_time_limit_table
 
 ###
 # Pages
@@ -64,11 +66,10 @@ def _calc_times():
     app.logger.debug("km={}".format(km))
     app.logger.debug("date_time={}".format(date_time))
     app.logger.debug("request.args: {}".format(request.args))
-    
+
     open_time = acp_times.open_time(km, brevet_dist_km, date_time)
     close_time = acp_times.close_time(km, brevet_dist_km, date_time)
-    if open_time == close_time:
-        close_time = arrow.get(close_time).shift(minutes=10).isoformat()
+
     result = {"open": open_time, "close": close_time}
 
     app.logger.debug("Sending JSON request")
