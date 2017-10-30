@@ -93,8 +93,11 @@
       <td><input name="miles" type="number" 
            min="0" max="900" size="5" /></td>
       <!-- Dist (km) -->
-      <td><input name="km" type="text"
-	   min="0" max="1100" size="5" /> </td>
+      {% if loop.index0 != 0 %}
+      <td><input name="km" type="text" min="0" max="1100" size="5" /> </td>
+      {% else %}
+      <td><input name="km" type="text" min="0" max="1100" size="5" id="id0"/> </td>
+      {% endif %}
       <!-- Location (optional) -->
       <td><input name="location" type="text" 
         placeholder="Optional location name"
@@ -170,6 +173,9 @@
              // Then calculate times for this entry
              calc_times(control_entry);
           });
+
+      $("#id0").val(0);
+      $("#id0").trigger("change");
 
      });   // end of what we do on document ready
 
